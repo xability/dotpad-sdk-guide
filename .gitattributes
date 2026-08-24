@@ -1,3 +1,15 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 sys.dic filter=lfs diff=lfs merge=lfs -text
+
+# liblouis ships its braille tables as an Emscripten data bundle whose index
+# holds byte offsets into the file. The bundle is mostly table text and has no
+# NUL bytes, so `text=auto` above detects it as text and normalises its CRLFs
+# on commit -- which removed 7,685 bytes from Web/3.0.2/lib/liblouis.data and
+# left every offset past the first one pointing into the middle of a different
+# table. liblouis then failed to compile `unicode.dis` ("opcode 'Name' not
+# defined"), every table that includes it failed with it, and translateText
+# returned an empty string for all 32 languages. Marked binary so the bytes
+# survive a round trip.
+*.data binary
+*.wasm binary
